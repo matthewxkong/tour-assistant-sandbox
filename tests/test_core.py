@@ -14,6 +14,15 @@ SLOTS = [
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_padded_listing_filter_matches_the_normalized_listing(self):
+        rows = [{'listing_id': ' home-a ', 'slot_id': 'one', 'provider': 'demo',
+                 'start_at': 300, 'expires_at': 200, 'version': 1}]
+        expected = options(rows, 100, 'home-a')
+        self.assertEqual(len(expected), 1)
+        self.assertEqual(options(rows, 100, ' home-a '), expected)
+        self.assertEqual(rows[0]['listing_id'], ' home-a ')
+        with self.assertRaises(ValueError):
+            options(rows, 100, '   ')
     def test_latest_version_can_revoke_cached_availability(self):
         self.assertEqual([row['slot_id'] for row in options(SLOTS, 100)], ['afternoon'])
 

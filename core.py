@@ -18,7 +18,7 @@ def options(rows, now, listing_id=None):
     """Return current read-only options; cached availability is never confirmation."""
     _time(now, 'now')
     if listing_id is not None:
-        _label(listing_id, 'listing_id')
+        listing_id = _label(listing_id, 'listing_id')
     if not isinstance(rows, list) or len(rows) > 500:
         raise ValueError('Expected at most 500 slot snapshots')
     latest = {}
