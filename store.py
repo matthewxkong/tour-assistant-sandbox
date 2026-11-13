@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 import sqlite3
 import time
+from pathlib import Path
 
 from core import _label
 
@@ -10,9 +11,12 @@ SOURCES = {'web', 'mobile', 'assistant'}
 
 
 class IntentStore:
-    def __init__(self, path, clock=time.time):
+    def __init__(self, path, clock=time.time, *, read_only=False):
         self.path = str(path)
         self.clock = clock
+        self.read_only = read_only
+        if read_only:
+            return
         with self.connect() as db:
             db.execute('''CREATE TABLE IF NOT EXISTS intents(
                 key TEXT PRIMARY KEY, actor TEXT NOT NULL, listing TEXT NOT NULL,
@@ -24,7 +28,7 @@ class IntentStore:
 
     @contextmanager
     def connect(self):
-        db = sqlite3.connect(self.path)
+        db = sqlite3.connect(Path(self.path).resolve().as_uri() + '?mode=ro', uri=True) if self.read_only else sqlite3.connect(self.path)
         try:
             with db:
                 yield db

@@ -1,6 +1,7 @@
 """Inspect synthetic tour options and locally saved intent state."""
 import argparse
 import json
+import sqlite3
 from pathlib import Path
 
 from core import options
@@ -37,10 +38,10 @@ def main(argv=None):
         if not Path(args.db).is_file():
             parser.error('Intent database does not exist')
         try:
-            store = IntentStore(args.db)
+            store = IntentStore(args.db, read_only=True)
             result = {'intent': store.status(args.key, args.actor),
                       'events': store.events(args.key, args.actor)}
-        except ValueError as error:
+        except (ValueError, sqlite3.Error, OSError) as error:
             parser.error(str(error))
     print(json.dumps(result, indent=2, ensure_ascii=True))
     return 0
