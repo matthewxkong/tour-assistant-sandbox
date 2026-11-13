@@ -29,6 +29,8 @@ python cli.py status REQUEST_KEY --actor demo-person --db intents.sqlite3
 
 ## Flow
 
+The `status` CLI opens an existing intent database in SQLite read-only mode and never initializes its schema. Missing, unrelated, or corrupt databases exit with code 2 and a concise error rather than modifying the file. Inspection remains scoped to the supplied demo actor.
+
 ```mermaid
 flowchart LR
   A[Current synthetic slot snapshots] --> B[Read-only options]
