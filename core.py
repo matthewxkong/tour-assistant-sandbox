@@ -22,6 +22,7 @@ def options(rows, now, listing_id=None):
     if not isinstance(rows, list) or len(rows) > 500:
         raise ValueError('Expected at most 500 slot snapshots')
     latest = {}
+    seen = {}
     for row in rows:
         if not isinstance(row, dict) or set(row) != {'listing_id', 'slot_id', 'provider', 'start_at', 'expires_at', 'version'}:
             raise ValueError('Invalid slot snapshot')
@@ -37,8 +38,10 @@ def options(rows, now, listing_id=None):
         normalized = {'listing_id': listing, 'slot_id': slot, 'provider': provider,
                       'start_at': start, 'expires_at': expires, 'version': version}
         prior = latest.get(key)
-        if prior and prior['version'] == version and prior != normalized:
+        revision = (listing, slot, version)
+        if revision in seen and seen[revision] != normalized:
             raise ValueError('Conflicting equal-version snapshot')
+        seen[revision] = normalized
         if prior is None or version > prior['version']:
             latest[key] = normalized
     current = [row for row in latest.values() if row['expires_at'] > now and row['start_at'] > now
