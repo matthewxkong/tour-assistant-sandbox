@@ -14,6 +14,15 @@ SLOTS = [
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_snapshot_conflicts(self):
+        from itertools import permutations
+        first, newer = SLOTS[:2]
+        conflict = dict(first, provider='different')
+        for rows in permutations([first, newer, conflict]):
+            with self.assertRaisesRegex(ValueError, 'Conflicting'):
+                options(list(rows), 100)
+        self.assertEqual(options([newer, first, first], 100), [])
+
     def test_latest_version_can_revoke_cached_availability(self):
         self.assertEqual([row['slot_id'] for row in options(SLOTS, 100)], ['afternoon'])
 
