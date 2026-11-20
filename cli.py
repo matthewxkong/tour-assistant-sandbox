@@ -12,7 +12,8 @@ from review import review_options
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
-    sub.add_parser('options', help='list current synthetic fixture options')
+    discovery = sub.add_parser('options', help='list current synthetic fixture options')
+    discovery.add_argument('--listing-id', help='select options for one listing')
     review = sub.add_parser('review', help='explain current options against preferences')
     review.add_argument('--listing-id')
     review.add_argument('--provider')
@@ -25,7 +26,11 @@ def main(argv=None):
     status.add_argument('--db', default='intents.sqlite3')
     args = parser.parse_args(argv)
     if args.command == 'options':
-        result = {'logical_now': LOGICAL_NOW, 'options': options(SLOTS, LOGICAL_NOW)}
+        try:
+            listing = args.listing_id.strip() if args.listing_id is not None else None
+            result = {'logical_now': LOGICAL_NOW, 'options': options(SLOTS, LOGICAL_NOW, listing)}
+        except ValueError as error:
+            parser.error(str(error))
     elif args.command == 'review':
         prefs = {key: getattr(args, key) for key in ('listing_id', 'provider', 'start_at', 'end_at', 'max_options')
                  if getattr(args, key) is not None}
