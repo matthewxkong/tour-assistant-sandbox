@@ -12,6 +12,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class CLITests(unittest.TestCase):
+    def test_listing_options_cli(self):
+        all_rows = json.loads(self.run_cli('options').stdout)['options']
+        listing = all_rows[0]['listing_id']
+        filtered = self.run_cli('options', '--listing-id', listing)
+        self.assertEqual(filtered.returncode, 0, filtered.stderr)
+        self.assertEqual(json.loads(filtered.stdout)['options'],
+                         [row for row in all_rows if row['listing_id'] == listing])
+        missing = self.run_cli('options', '--listing-id', 'missing')
+        self.assertEqual(json.loads(missing.stdout)['options'], [])
+
     def run_cli(self, *args):
         return subprocess.run([sys.executable, 'cli.py', *args], cwd=ROOT, capture_output=True, text=True)
 
